@@ -1,0 +1,98 @@
+This section details the computational procedure used to compute the posterior of interest $\pi(G| Y,\delta,r,\Phi)$. In what follows, we set $\theta = (\tau, r) \in \mathbb{R}_{++} \times (0,1)$. We begin with the building blocks of the main MCMC procedure.
+\subsection{Stochastic Approximation EM (SAEM)}\label{subsec:saem}
+In principle, we could compute the values for $\theta$ using a canonical empirical Bayes procedure and maximizing over the following likelihood function:
+\begin{equation*}
+    f(Y|\theta) \propto \sum_{G \in \mathcal{D}_p} \{\frac{h_G(\delta, \Phi)}{h_G(n+\delta, \Phi + S_Y)}\}\pi(G|r)
+\end{equation*}
+Where $\mathcal{D}_p$ is the set of decomposable graphs with $p$ vertices. In practice, when the number of vertices is moderate, the set becomes so large that it is unfeasible to perform the sum over $\mathcal{D}_p$. A usual EM procedure is also not feasible, since in the E-step it involves an expectation over the space of graphs, which again requires us to compute the posterior probability of every graph $G \in \mathcal{D}_p$. We therefore adopt a stochastic approximation of the EM algorithm. Among the available options, the most relevant for our purposes is the SAEM approach of \textcite{delyon1999convergence}, in which the E-step is split into a simulation step and a stochastic approximation step. We use SAEM-MCMC, an augmentation of SAEM proposed by \textcite{kuhn2004coupling}, in which the exact simulation step is replaced by a draw from an ergodic Markov chain.\\
+Compared to the original EM method, the E-step is replaced by a stochastic approximation step (SA) of $Q_k(\theta)=Q(\theta|\hat\theta_{k-1})$. At iteration $k$, first there is a simulation step of $(\Sigma_G^{(k)}, G^{(k)})$ with the posterior distribution $(\Sigma_G,G)|Y,\hat\theta_{k-1}$. Followed by a stochastic approximation step as in \textcite{robbins1951stochastic}:
+\begin{equation*}
+    Q_k(\theta) = (1-\gamma_k)Q_{k-1}(\theta) + \gamma_k \log f(Y, \Sigma_G^{(k)}, G^{(k)}|\hat\theta_{k-1})
+\end{equation*}
+Where $(\gamma_k)_{k\in\mathbb{N}}$ is a sequence of positive real numbers such that $\sum_k \gamma_k = \infty$ and $\sum_k \gamma_k^2 < \infty$. Note that when the joint distribution $(Y, \Sigma_G , G)$ belongs to the exponential family, the SA step reduces to the approximation of minimal sufficient statistics. The M-step is the same as in the usual EM algorithm. \\
+Since the distribution of interest is Gaussian, following \textcite{donnet2012empirical} we can obtain the sufficient statistics of interest for GGMs, which are:
+\begin{equation}
+    \begin{gathered}
+        S_1(Y, G , \Sigma_G) = \sum_{C\in\mathcal{C}} |C|^2 - \sum_{S\in\mathcal{S}}|S|^2\\
+        S_2(Y, G , \Sigma_G) = \text{tr}(\Sigma_G^{-1})\\
+        S_3(Y, G , \Sigma_G) = k_G
+    \end{gathered}
+\end{equation}
+Therefore the SAEM-MCMC procedure has to approximate these three statistics of interest. Intuitively, $S_1$ captures graph complexity through clique sizes, $S_2$ summarizes overall precision, and $S_3$ measures graph sparsity via the number of edges. 
+\subsection{Metropolis-Hastings}\label{subsec:mh}
+At each iteration $k$, the SAEM-MCMC algorithm requires a couple $(G , \Sigma_G)$ to be generated from the posterior distribution of $(G, \Sigma_G)| Y,\hat\theta_{k-1}$. At each iteration, this simulation can be achieved using the following two-step procedure:
+\begin{itemize}
+    \item S1: $G^{(k)} \sim \pi(G| Y,\theta^{(k-1)})$
+    \item S2: $\Sigma_G^{(k)} \sim \pi(\Sigma_G | G^{(k)}, Y, \theta^{(k-1)})$
+\end{itemize}
+The step S2 follows as a simulation of HIW distributions from our prior choice. For the first step, we use an MCMC algorithm with \textit{add and delete} MH proposals. Let $G$ be the current graph, $G_{G}^{-}$ the set of decomposable graphs obtained from $G$ by deleting an edge, and analogously $G_{G}^{+}$ the set obtained by adding an edge. By the structure of SAEM-MCMC and the purposes of this project, we actually just need to do a single MH transition per SAEM iteration, although the algorithm will be described as if we were iterating within the S1 step MH proposals. One can do it and it will improve mixing at computational expense without producing meaningful performance improvements.
+\begin{algorithm}[H]
+    \caption{Add and delete MH proposal}\label{alg:add-delete-mh}
+    At iteration $t$
+    \begin{enumerate}
+        \item Choose at random (With equal probability) whether to delete or add an edge to $G^{(t-1)}$
+        \begin{itemize}
+            \item If an edge is deleted, enumerate $G_{G^{(t-1)}}^{-}$ and generate $G^p$ according to a uniform distribution on $G_{G^{(t-1)}}^{-}$
+            \item If an edge is added, enumerate $G_{G^{(t-1)}}^{+}$ and generate $G^p$ according to a uniform distribution on $G_{G^{(t-1)}}^{+}$
+        \end{itemize}
+        \item Calculate the MH acceptance probability $\rho(G^{(t-1)}, G^p)$ such that $\pi(G| Y, \theta)$ is the invariant distribution of the Markov chain.
+        \item With probability $\rho(G^{(t-1)}, G^p)$, accept $G^p$ and thus set $G^{(t)} = G^p$. Otherwise reject and set $G^{(t)} = G^{(t-1)}$
+    \end{enumerate}
+\end{algorithm}
+The acceptance probability is equal to $\min\{\alpha(G^{(t-1)}, G^p),1\}$. Where:
+\begin{equation*}
+    \begin{gathered}
+       \alpha(G^{(t-1)}, G^p) = \frac{\pi(G^p| Y, \delta,r, \Phi)}{\pi(G^{(t-1)}| Y, \delta,r, \Phi)} \frac{q(G^{(t-1)}|G^p)}{q(G^p|G^{(t-1)})}\\
+       \frac{q(G^{(t-1)}|G^p)}{q(G^p|G^{(t-1)})} = \begin{cases}
+           \frac{|G_{G^{(t-1)}}^+|}{|G_{G^p}^{-}|} \quad \text{if add}\\
+           \frac{|G^{-}_{G^{(t-1)}}|}{|G_{G^p}^+|} \quad \text{if delete}
+       \end{cases}
+    \end{gathered}
+\end{equation*}
+And $\pi(G|Y,\delta,r,\Phi)$ is evaluated as described in (\ref{postGraph}). \\
+
+\subsubsection{Data-Driven MH Proposals}
+In \textcite{donnet2012empirical}, the authors provide an alternative MH step, in which the proposed graph $G^p$ is not sampled uniformly from the space of decomposable graphs resulting from adding/deleting an edge to the current graph. This procedure takes into account the empirical precision matrix in order to guide the search over the space of decomposable graphs. To describe this modified MH algorithm, let $K$ denote the empirical precision matrix, i.e. $K = (S_Y/n)^{-1}$. Let $G^{(t-1)}\setminus (i,j)$ denote the graph $G^{(t-1)}$ where the edge $(i,j)$ has been removed. Analogously $G^{(t-1)}\cup (i,j)$ denotes the graph $G^{(t-1)}$ where the edge $(i,j)$ has been added. Then, within step 1 of Algorithm~\ref{alg:add-delete-mh}, instead of generating $G^p$ according to a uniform distribution, we proceed as follows:
+\begin{itemize}
+    \item If an edge is deleted, enumerate $G^{-}_{G^{(t-1)}}$ and generate $G^p$ according to: \begin{equation*}
+        \mathbb{P}[G^p =  G^{(t-1)}\setminus(i,j)|G^{(t-1)}] \propto \frac{1}{|K_{ij}|}
+    \end{equation*}
+    \item If an edge is added, enumerate $G^{+}_{G^{(t-1)}}$ and generate $G^p$ according to:
+    \begin{equation*}
+                \mathbb{P}[G^p =  G^{(t-1)}\cup(i,j)|G^{(t-1)}] \propto |K_{ij}|
+    \end{equation*}
+\end{itemize}
+where $K_{i,j}$ is the $(i,j)$ entry of $K$. In theory, the data-driven proposal should stabilize the Markov chain faster because it directs MH proposals toward graphs more supported by the data. In our implementation, we find no noticeable improvement over uniform sampling from $G_{G^{(t-1)}}^{+}$ and $G_{G^{(t-1)}}^{-}$.
+An important remark is that using this approach changes the computation of the normalizing constant in the acceptance probability ($\frac{q(G^{(t-1)}|G^p)}{q(G^p|G^{(t-1)})}$) so that it takes into account the weights. 
+
+\subsection{Main MCMC Algorithm}
+The main algorithm consists of an iterative MCMC procedure in which each iteration runs the MH and SAEM steps and concludes with an M-step that updates the hyperparameters using the SAEM-approximated statistics to maximize the likelihood\footnote{Full derivation available in \textcite{donnet2012empirical}.}. The procedure iterates until convergence. \\
+\textcite{kuhn2004coupling} establish convergence of this scheme provided the S-step invariant distribution is correct. Then $\hat \theta$ converges almost surely to a (possibly local) maximizer of $f(Y|\theta)$. At the same time, a correct hyperparameter vector $\theta$ will lead the MH sampler to sample from a ``better'' graph space, leading to an invariant distribution which takes into account the hyperparameters more likely to have generated the data. 
+
+\begin{algorithm}[H]
+    \caption{MCMC Algorithm}
+    \begin{enumerate}
+        \item Initialize $\hat\theta^{(0)}, s_1^{(0)}, s_2^{(0)},s_3^{(0)}$
+        \item At each iteration $k$
+        \begin{itemize}
+            \item \ [S-Step]: Generate $G^{(k)}$ and $\Sigma_G^{(k)}$ from $M$ iterations of the MH procedure detailed in Section~\ref{subsec:mh}
+            \item \ [SA-Step]: Update $(s_i^{(k)})_{i=1,2,3}$ using the stochastic approximation scheme detailed in Section~\ref{subsec:saem}
+            \item \ [M-Step]: Maximize the joint-likelihood using the updated minimal sufficient statistics:
+            \begin{equation*}
+                \begin{gathered}
+                    \hat\tau^{(k)} = \frac{(\delta-1)p + s_1^{(k)}}{s_2^{(k)}} \\
+                    \hat r^{(k)} = \frac{s_3^{(k)}}{m}
+                \end{gathered}
+            \end{equation*}
+        \end{itemize}
+        \item Set $k = k+1$ and repeat until convergence
+    \end{enumerate}
+\end{algorithm}
+\subsubsection{Implementation}
+The algorithm is ready to be implemented in any statistical software as presented above. The main challenges are graph-theoretic --- finding cliques and separators of the current graph --- and numerical, in handling edge cases of the MCMC. We implement all priors and likelihoods on the log scale to avoid overflow, and rely on two R packages built for graphical-model computation: \texttt{gRbase} \parencite{gRbase} for junction-tree decomposition into separators, and \texttt{igraph} \parencite{igraph} for clique enumeration and decomposability checks. 
+
+% The most delicate edge cases are the empty graph and the complete graph. When the chain visits one of these, the candidate set of additions $G_{G^{(t-1)}}^{+}$ (or deletions $G_{G^{(t-1)}}^{-}$) is empty, and the symmetric add/delete coin-flip becomes degenerate. We force the algorithm to choose the only available direction in these cases.\footnote{In principle this requires a corresponding adjustment of the acceptance ratio to preserve detailed balance. The effect is negligible at typical sample sizes, and we leave the asymmetry uncorrected in the implementation.}
+
+An important issue arises when the empty graph is sampled at some MH iteration: the sufficient statistic $S_3 = k_G$ collapses to zero, which drives the M-step update of $\hat r^{(k)}$ to zero as well. We regularize the $S_3$ update step to avoid this.
+
+The algorithm is efficient except in the high-$p$ regime. The bottleneck is the MH step, which requires enumerating decomposable graphs reachable by a single edge addition or deletion. % The candidate set is large, and decomposability checks on each candidate are non-trivial. A natural optimization would exploit the existing clique structure and update incrementally rather than re-checking from scratch. We leave that direction to future work.

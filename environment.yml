@@ -1,0 +1,114 @@
+name: GraphLearning
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  # Core languages
+  - python =3.11.*
+  - r-base =4.5.*
+
+  # LaTeX compiler
+  - tectonic
+
+  # Package management
+  - pip
+
+  # Jupyter infrastructure
+  - jupyterlab
+  - ipykernel
+  - ipywidgets
+  - nb_conda_kernels
+
+  # Python basic functionality
+  - pandas
+  - openpyxl
+
+  # Python Essentials
+  # - numpy
+  # - matplotlib
+  # - seaborn
+  # - scipy
+  # - statsmodels
+  # - scikit-learn
+
+  # Python Economics
+  # - linearmodels
+  # - cvxpy
+  # - quantecon
+
+  # R Essentials
+  - r-tidyverse     # includes ggplot2, dplyr, tidyr, readr, purrr, tibble, stringr, forcats
+  - r-openxlsx      # read/write Excel files
+  - r-haven         # read/write Stata, SPSS, SAS files
+  - r-english       # convert numbers to words (scalars)
+  - r-devtools      # install packages from GitHub
+  - r-irkernel      # R kernel for Jupyter
+  - r-broom         # tidy model outputs
+  - r-modelsummary  # publication-quality regression tables
+
+  # R Data Wrangling
+  - r-data.table    # data manipulation
+  - r-janitor       # cleaning data
+  - r-reshape2      # data reshaping
+  - r-stringr       # string/text processing
+
+  # R Visualization
+  - r-gghighlight   # highlights objects in plots
+  - r-ggrepel       # repels overlapping text labels
+  - r-RColorBrewer  # color palettes
+  - r-scales        # scale functions for visualization
+  - r-ggpubr        # publication-ready plots
+  - r-cowplot       # plot grids
+  - r-patchwork     # plot layouts
+
+  # R Table Output
+  - r-xtable        # export tables to LaTeX, HTML
+  - r-kableExtra    # table formatting
+
+  # R Analysis
+  - r-igraph        # graph manipulation for SAEM-MCMC
+  - r-tidymodels    # machine learning framework
+  - r-fixest        # FE regression
+  - r-sandwich      # robust standard errors
+  - r-fastdummies   # create dummy variables
+  - r-lmtest        # diagnostic tests
+  - r-plm           # panel data models
+  - r-car           # regression diagnostics
+  - r-ivreg         # instrumental variables regression
+  - r-Hmisc         # miscellaneous functions for data analysis
+  - r-estimatr      # lm_robust() for 2x2 DiD with HC/cluster SEs
+  - r-did           # Callaway & Sant'Anna (2021, JoE): att_gt(), aggte()
+  - r-didimputation # Borusyak, Jaravel & Spiess (2024, ReStud): imputation estimator
+  # NOTE: the three packages below are CRAN-only (not on conda-forge). Install via
+  # R: install.packages(c("Synth", "scpi", "eventstudyr")) after `micromamba activate`.
+  # - r-Synth         # Abadie, Diamond, Hainmueller (JASA 2010): canonical synthetic control method
+  # - r-scpi          # Cattaneo, Feng, Titiunik (JASA 2021): synthetic control prediction intervals
+  # - r-eventstudyr   # Freyaldenhoven, Hansen, Shapiro (AER 2019): panel event studies
+
+  # R Extensions
+  - r-glasso        # graphical lasso for graph comparison
+  - r-huge          # glasso model selection (STARS, EBIC)
+  - r-bdgraph       # Mohammadi & Wit (2015): general (non-decomposable) Bayesian GGM; Stage 2 of two-stage DIP procedure
+  # - r-leaflet    # interactive maps
+  # - r-maptools   # spatial data manipulation
+  # - r-ggmap      # Google Maps integration
+  # - r-zoo        # irregular time series
+  # - r-jsonlite   # JSON parsing
+  # - r-mlmetrics  # machine learning metrics
+  # - r-xgboost    # gradient boosting
+  # - r-glmnet     # regularized regression
+  # - r-xml2       # XML parsing
+  # - r-Unicode    # Unicode support
+  # - r-etwfe      # Wooldridge (2023, JoE) via McDermott: extended TWFE
+  # - r-did2s      # Gardner (2022, R Journal): two-stage DiD; event_study() comparison
+
+  # R Extensions not in CRAN (install via devtools::install_github() or BiocManager)
+  # install.packages("BiocManager"); BiocManager::install("gRbase")  --> junction tree / separator extraction for SAEM-MCMC
+  # devtools::install_github("asheshrambachan/HonestDiD") --> Rambachan and Roth (2023, ReStud): honest DiD sensitivity analysis
+  # devtools:install_github("ebenmichael/augsynth")       --> Ben-Michael, Feller, Rothstein (2021, JASA): augmented sythentic control
+  # devtools:install_github("synth-inference/synthdid")   --> Arkhangelsky, Athey, Hirshberg, Imbens, Wager (2021, PNAS): synthetic diff-in-diff
+
+  # Pip fallback (if needed)
+  # - pip:
+  #     - jupyterlab_code_formatter

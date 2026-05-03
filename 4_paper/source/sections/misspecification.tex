@@ -1,0 +1,70 @@
+The preceding sections assumed that the data-generating graph $G^*$ is decomposable. In practice that assumption is rare: most graphs encountered in applied work are non-decomposable. The presented procedure, however, searches only the space $\mathcal{D}_p$ of decomposable graphs on $p$ vertices. This section establishes that, under mild regularity conditions, the resulting posterior asymptotically concentrates on the set of \textit{minimal triangulations} of $G^*$ rather than on $G^*$ itself, drawing on results of \textcite{niu2020bayesian}, and uses that characterization to motivate a two-stage procedure that combines the computational tractability of decomposable inference with the generality of methods that operate over the full graph space.
+
+\subsection{Setup and definitions}
+
+Let $G^* = (V, E^*)$ denote the true undirected graph, which we no longer assume to be decomposable. We observe $n$ i.i.d.\ draws from $\mathcal{N}_p(0, \Sigma_{G^*})$, where $\Sigma_{G^*}$ is any covariance matrix whose zeros reflect the conditional independencies in $G^*$. The SAEM-MCMC procedure searches over $\mathcal{D}_p$ and returns a posterior distribution $\pi(G \mid Y)$ supported on $\mathcal{D}_p$. We require two graph-theoretic definitions, both taken from \textcite{heggernes2006minimal}.
+
+\begin{definition}[Triangulation]
+    A \textit{triangulation} of a graph $G = (V, E)$ is a decomposable graph $G^\Delta = (V, E \cup F)$ for some set of \textit{fill edges} $F$ disjoint from $E$. Equivalently, $G^\Delta$ is obtained by adding edges to $G$ until every cycle of length four or greater possesses a chord.
+\end{definition}
+
+\begin{definition}[Minimal triangulation]
+    A triangulation $G^\Delta = (V, E \cup F)$ of $G = (V, E)$ is \textit{minimal} if $(V, E \cup F')$ is non-chordal for every proper subset $F' \subsetneq F$.
+\end{definition}
+
+A useful characterization due to \textcite{rose1976algorithmic} is that $G^\Delta$ is minimal if and only if removing any single fill edge from $G^\Delta$ yields a non-chordal graph. Denote by $\mathcal{M}(G^*)$ the set of all minimal triangulations of $G^*$. When $G^*$ is itself decomposable, $\mathcal{M}(G^*) = \{G^*\}$, so the well-specified case is nested within the framework. When $G^*$ is non-decomposable, $\mathcal{M}(G^*)$ is in general not unique. Figure~\ref{fig:decomposability_cliques}(a), for example, admits two minimal triangulations.
+
+\subsection{Asymptotic concentration on minimal triangulations}
+
+The main theoretical result of the section is a direct application of \textcite{niu2020bayesian}.
+
+% \begin{assumption}[Graph size]
+%     $p \precsim n^\alpha$ for some $0 < \alpha < 1$.
+% \end{assumption}
+
+% \begin{assumption}[Edge sensitivity and identifiability]
+%     $\rho_L \asymp n^{-\lambda}$ for some $0 \le \lambda < 1/2$.
+% \end{assumption}
+
+% \begin{assumption}[Sparsity]
+%     $|E^*| \precsim n^\sigma$ for some $0 \le \sigma \le 2\alpha$.
+% \end{assumption}
+
+% \begin{assumption}[Prior edge inclusion probability]
+%     $r \asymp e^{-C_q n^\gamma}$ for some $0 < \gamma < 1$ and $0 < C_q < \infty$.
+% \end{assumption}
+
+% \begin{assumption}[Imperfect linear relationship]
+%     $1 - \rho_U \asymp n^{-k}$ for some $k > 0$, and $\rho_U \neq 1$.
+% \end{assumption}
+
+%\textbf{Remark:} Assumption 4 in \textcite{niu2020bayesian} requires the prior edge probability to decay with sample size. Our empirical Bayes prior converges to a constant $r^* \in (0, 1)$, which is asymptotically equivalent to a fixed prior; we conjecture that the result extends because a fixed prior is dominated by the likelihood as $n \to \infty$. A formal extension is left for future work. The remaining assumptions ensure that true edges are identifiable, they impose that partial correlations cannot decay to zero too quickly relative to the sample size and control the dimensionality growth.
+Under mild conditions on the partial-correlation spectrum, the posterior over decomposable graphs concentrates on the minimal-triangulation set of $G^*$ in the fixed-$p$ regime that covers our applications.
+\begin{theorem}[\textcite{niu2020bayesian}, Theorems 5.1 and 5.2]\label{thm:concentration}
+Assume the true graph $G^*$ is non-decomposable, $p$ is fixed, and the maximum population partial correlation satisfies $\rho_U < 1$. Then the posterior mass on the minimal-triangulation set $\mathcal{M}(G^*)$ converges to one, and the posterior mode $\hat G_D$ of the SAEM-MCMC procedure lies in $\mathcal{M}(G^*)$ with probability converging to one,
+\begin{equation*}
+    \mathbb{P}(\hat G_D \in \mathcal{M}(G^*)) \to 1 \quad \text{as} \quad n \to \infty.
+\end{equation*}
+\end{theorem}
+\textcite{niu2020bayesian} state two versions of the concentration result: a fixed-$p$ version (Theorems~5.1 and~5.2), which we invoke here, and a high-dimensional version (Theorem~5.3 and Corollary~5.1) that requires their Assumption~4.4 on the graph prior to decay as $q \asymp e^{-C n^\gamma}$ for some $0 < \gamma < 1$. Our empirical-Bayes update of $r$ converges to a positive constant and does not satisfy that condition, so the high-dimensional version does not transfer directly to our procedure. The fixed-$p$ statement above is unaffected: under a Bernoulli prior with bounded $r$ the Bayes-factor convergence of Theorem~5.1 dominates the bounded prior ratio between graphs of comparable size, so the posterior mode is asymptotically in $\mathcal{M}(G^*)$ regardless of whether the prior decays. Extending the high-dimensional consistency result to bounded-away-from-zero priors is left to future work.
+
+Two features of Theorem~\ref{thm:concentration} matter for what follows. The first is that the posterior mode becomes asymptotically supported on $\mathcal{M}(G^*)$. The data cannot distinguish between minimal triangulations because any two of them differ only by fill edges, which carry zero partial correlation under $G^*$ by definition. The second feature is the asymmetric Bayes-factor result of Theorem~4.1 in \textcite{niu2020bayesian}: the Bayes factor in favor of deleting a true edge decays exponentially in $n$, while the Bayes factor in favor of adding a false edge decays only polynomially. Missing a true edge is therefore much more strongly penalized than including a fill edge, and the posterior inclusion probability of a fill edge is inflated relative to its true value of zero. To build intuition, in the graph presented in Figure~\ref{fig:decomposability_cliques} we expect the fill-in edges to have $\text{PIP}_{ij} \approx 1/2$. For more complex graphs the exact magnitude depends on the multiplicity of triangulations, but the qualitative pattern is the same: the posterior inclusion probabilities of fill edges reflect the ambiguity over minimal triangulations rather than collapsing toward zero.
+
+\subsection{The Decomposable-Informed Prior (DIP)}
+
+Theorem~\ref{thm:concentration} suggests a natural two-stage approach to inference when $G^*$ may be non-decomposable. A first idea would be to delete fill edges from $\hat G$ until the result is no longer chordal. This is unfeasible to scale as identifying fill-in edges is in general NP-hard \parencite{yannakakis1981computing}. A more sensible alternative is to use the Stage-1 posterior as a prior for a more general method that searches over the full graph space. General Bayesian methods for non-decomposable Gaussian graphical models exist --- the generalized Hyper-Inverse Wishart prior of \textcite{mohammadi2015bdgraph} is the canonical example --- but they rely on approximations of the normalizing constant and are considerably slower than the decomposable sampler.
+
+To exploit the Stage-1 information without locking in its bias, we propose to use the full posterior edge inclusion probability matrix from Stage~1, with entries $\text{PIP}_{ij} \in [0,1]$, mixed with an uninformative reference probability $r_0$. Let $p_{ij}$ denote the prior probability that edge $(i,j)$ is present in the Stage-2 graph. The \textit{Decomposable-Informed Prior} (DIP) is
+\begin{equation*}
+    \begin{gathered}
+        p_{ij} \;=\; \lambda\,\text{PIP}_{ij} \;+\; (1-\lambda)\, r_0, \\
+        \pi(G) \;\propto\; \prod_{i < j} p_{ij}^{\mathbf{1}\{(i,j)\in G\}} \, (1 - p_{ij})^{\mathbf{1}\{(i,j) \notin G\}},
+    \end{gathered}
+\end{equation*}
+where $\lambda \in [0,1]$ is a mixing weight whose sensitivity is examined in Section~\ref{sec:lambda}.
+
+Using the full PIP matrix rather than the modal Stage-1 graph is deliberate. By Theorem~\ref{thm:concentration} the modal triangulation is one element of $\mathcal{M}(G^*)$, but the data cannot identify which one; collapsing to a binary modal adjacency therefore discards the information that several minimal triangulations are equally compatible with the data. The PIP matrix preserves that information. A high-confidence true edge enters Stage~2 with $\text{PIP}_{ij} \approx 1$, so the prior dominates more strongly than for fill edges; an ambiguous fill edge enters with $\text{PIP}_{ij} \approx 1/2$ and a nearly flat prior, which lets the Stage-2 sampler arbitrate using the data. The empirical confirmation of this mechanism on the four-cycle is reported in Section~\ref{sec:sim}.
+
+A key advantage of the two-stage approach over a direct application of general graphical model selection is its ability to exploit the structural properties of decomposable graphs. The first stage operates over a restricted but computationally tractable class and produces a posterior that contains the true edges with high probability, alongside fill edges induced by the decomposability constraint. The second stage searches the full graph space with this Stage-1 posterior folded into its prior through the DIP, rather than searching with a flat Bernoulli prior.
+
+% The procedure has limitations. As noted in Section~\ref{sec:algorithm}, the SAEM-MCMC step is computationally expensive in high dimensions even though the search space is restricted to $\mathcal{D}_p$. In high-dimensional regimes regularized frequentist methods remain the more practical choice. The proposed approach is appropriate for low- to mid-dimensional problems in which uncertainty quantification over the graph is a substantive deliverable.

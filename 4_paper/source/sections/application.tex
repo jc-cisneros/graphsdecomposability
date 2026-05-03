@@ -1,0 +1,58 @@
+We apply the two-stage procedure to the daily-range volatility series of \textcite{demirer2018estimating}, who use a LASSO-VAR forecast error variance decomposition to estimate connectedness in a global bank network. Their dataset comprises ninety-six bank stocks from the world's top 150 by total assets and ten ten-year sovereign bond series, observed daily from 12 September 2003 to 7 February 2014 ($n = 2{,}676$). We work with the log of the range volatilities so that the marginals are approximately Gaussian, the assumption under which the SAEM-MCMC posterior is well-defined. We use the full panel ($p = 106$) and report results at the calibrated DIP configuration $\lambda = 0.5$, $r_0 = 0.2$, the same reference probability used in the simulation grid (Section~\ref{sec:sim}) and the $\lambda$-sensitivity sweep (Appendix~\ref{sec:lambda}).
+
+Stage-1 SAEM-MCMC was run for $K = 8{,}000$ iterations with $M = 5$ MH sub-iterations per SAEM step and the data-driven proposal of \textcite{donnet2012empirical}. Stage-2 BDMCMC was run for $4{,}000$ birth-death iterations with a $25\%$ burn-in. Convergence sentinels recorded over the second half of the SAEM trajectory are summarized in Table~\ref{tab:ddly-diag}: $\hat\tau$, $\hat r$, and the marginal log-likelihood are all stable, with coefficient of variation under $0.5\%$ and relative log-likelihood drift of $0.01\%$, two orders of magnitude inside our pre-specified $5\%$ tolerance. The Stage-2 PIP matrix, the analogue of the Stage-1 PIP matrix from inference over the unrestricted graph space, is symmetric and componentwise valid.
+
+\begin{table}[H]
+    \centering
+    \caption{Stage-1 convergence diagnostics on the $p = 106$ DDLY panel.}
+    \label{tab:ddly-diag}
+    \begin{tabular}{lrl}
+        \toprule
+        Quantity & Value & Tolerance \\
+        \midrule
+        Mean $\hat\tau$ over last $K/2$ iterations  & $2.130$  & --- \\
+        CV of $\hat\tau$ over last $K/2$            & $0.43\%$ & $\le 5\%$ \\
+        Mean $\hat r$ over last $K/2$               & $0.0462$ & --- \\
+        CV of $\hat r$ over last $K/2$              & $0.28\%$ & $\le 5\%$ \\
+        Relative log-likelihood drift               & $0.01\%$ & $\le 5\%$ \\
+        \bottomrule
+    \end{tabular}
+    \\[0.4em]
+    \begin{minipage}{0.85\linewidth}
+        \footnotesize
+        \emph{Notes:} Coefficient of variation $\text{CV}(x) = \mathrm{sd}(x)/|\bar{x}|$ computed over the last $K/2 = 4{,}000$ SAEM iterations. Relative log-likelihood drift is $(\max - \min) / |\text{mean}|$ over the same window. All three sentinels pass at $K = 8{,}000$ with substantial margin.
+    \end{minipage}
+\end{table}
+
+The simulation grid in Section~\ref{sec:sim} shows that the DIP family adds little to BDMCMC on simulated data, and that Theorem~\ref{thm:concentration}'s cycle prediction holds empirically. The application makes the misspecification story concrete: it reports how non-decomposable the recovered structure is on real data.
+
+Stage 1 returns a graph in $\mathcal{D}_p$ by construction. Stage 2 operates over the unrestricted graph space and is free to return non-decomposable graphs whenever the data prefer them. The empirical signature of misspecification is therefore in three quantities: whether the Stage-2 graph is itself non-decomposable, how many chordless cycles it contains, and what fraction of Stage-2's added edges are precisely the ones that break decomposability when added to Stage-1.
+
+\begin{table}[H]
+    \centering
+    \caption{Misspecification audit on the $p = 106$ DDLY panel.}
+    \label{tab:ddly-misspec}
+    \begin{tabular}{lr}
+        \toprule
+        Quantity & Value \\
+        \midrule
+        Stage-1 edges (PIP $> 0.5$) & $262$ \\
+        Stage-2 edges (PIP $> 0.5$) & $647$ \\
+        Stage-2-extra edges (in Stage-2, not in Stage-1) & $439$ \\
+        Stage-2-dropped edges (in Stage-1, not in Stage-2) & $54$ \\
+        Stage-1 graph decomposable? & True \\
+        Stage-2 graph decomposable? & False \\
+        Induced chordless 4-cycles in Stage-2 & $3{,}742$ \\
+        Stage-2-extra edges that break decomposability when added to Stage-1 & $411$ ($93.6\%$) \\
+        \bottomrule
+    \end{tabular}
+    \\[0.4em]
+    \begin{minipage}{0.85\linewidth}
+        \footnotesize
+        \emph{Notes:} An induced chordless 4-cycle is a 4-cycle $i \! - \! j \! - \! k \! - \! l \! - \! i$ in which neither $(i, k)$ nor $(j, l)$ is an edge. The presence of any such cycle implies non-decomposability.
+    \end{minipage}
+\end{table}
+
+Three readings follow. First, Stage 2 returns a graph that lies outside the decomposable class, with thousands of induced chordless cycles. The data want a non-decomposable structure, and Stage 2 delivers it. Second, the bulk of the difference between Stage 2 and Stage 1 lies in edges that close chordless cycles: $94\%$ of Stage-2's added edges break the decomposability of Stage-1 if inserted there. The decomposability restriction in Stage 1 is the binding constraint that Stage 2 lifts. Third, Stage 2 also drops $54$ edges that Stage 1 included; these are predominantly chord-fill edges that maintained decomposability in Stage 1 but did not survive Stage 2. Together these three observations ground the procedure's theoretical motivation in observable network statistics.
+
+The Stage-2 network has $647$ edges among $\binom{106}{2} = 5{,}565$ possible pairs ($11.6\%$ density) and is fully connected as a single component. Three regional features stand out. First, the densest region pair is intra-Eurozone, with $104$ edges linking Eurozone institutions and the five Eurozone sovereign bonds among the ten in the panel (Germany, France, Italy, Spain, Greece) sitting at the center. Second, two further within-region clusters emerge: an Asia cluster ($85$ within-Asia edges, anchored by Japanese and Korean banks) and a US cluster ($53$ within-US edges, including both the bulge bracket and several US regional banks). Third, the cross-region bridges scale roughly with the product of within-region counts, with Asia--Eurozone ($46$ edges) the strongest and Eurozone--US ($35$) and Asia--US ($26$) substantial. The Greek sovereign bond attains the highest sovereign-bond degree centrality ($17$), followed by France and Japan ($13$ each); Italy ($11$) and Spain ($10$) round out the top of the sovereign list. Most of these sovereign-bond connections run to bank stocks rather than to other sovereigns, in contrast to \textcite{demirer2018estimating}'s finding that sovereigns cluster among themselves. The top ten banks by Stage-2 degree centrality span European universals, US (mostly regional) banks, and one Other-EM representative. The broad regional groupings overlap with \textcite{demirer2018estimating}'s top systemic ranking, but the specific institutions differ in ways that follow from our estimand being contemporaneous-conditional rather than dynamic-marginal. Appendix~\ref{sec:appendix-ddly} reports the labelled network and the full top-centrality table, and discusses the comparison with \textcite{demirer2018estimating} in more detail.

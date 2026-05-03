@@ -1,0 +1,79 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[style=apa, backend=biber]{biblatex}
+\usepackage[english]{babel}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{subcaption} % Required for subfigures
+\usepackage{caption}
+\usepackage{adjustbox}
+\usepackage{blindtext}
+\usepackage{amsthm}
+\usepackage{titlesec}
+\usepackage{xurl} % Better line breaking for URLs
+\usepackage{setspace}
+\usetikzlibrary{calc, arrows.meta}
+\addbibresource{bibliography.bib}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{prop}{Proposition}
+
+\newcommand{\cesin}{\frac{\varepsilon-1}{\varepsilon}}
+\newcommand{\cesout}{\frac{\varepsilon}{\varepsilon-1}}
+\newcommand{\E}{\mathbb{E}}
+\newtheorem{assumption}{Assumption}
+\newtheorem{definition}{Definition}
+\newcommand\EE{\mathbb{E}}
+\usepackage{hyperref}
+\usepackage[bottom]{footmisc} % pin footnotes to the bottom of the page
+\renewcommand{\thefootnote}{\arabic{footnote}}
+\title{Diagnosing Robustness of Decomposability in Gaussian Graphical Models}
+\author{Juan Carlos Cisneros$^{1}$ \and Erik Solé$^{1}$}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\footnotetext[1]{Universitat Pompeu Fabra. We acknowledge the use of Claude Opus 4.7 for writing the analysis code and for revisions and formatting of the draft. The repository is available at TBD. Any errors remain our own.}
+
+\section{Introduction}
+\input{sections/introduction}
+
+\section{Methods - Decomposable Graphs}\label{sec:theory}
+\input{sections/theory}
+
+\section{Methods - SAEM-MCMC Algorithm}\label{sec:algorithm}
+\input{sections/algorithm}
+
+\section{Misspecification and Robustness}\label{sec:misspec}
+\input{sections/misspecification}
+
+\section{Simulations}\label{sec:sim}
+\input{sections/simulations}
+
+\section{Application: Global Bank Network}\label{sec:application}
+\input{sections/application}
+
+\section{Discussion}\label{sec:discussion}
+\input{sections/discussion}
+
+\newpage
+\printbibliography
+
+\newpage
+\appendix
+
+\section{$\lambda$ Sensitivity Sweep}\label{sec:lambda}
+\input{sections/lambda_sensitivity}
+
+\section{DDLY network detail and comparison with \textcite{demirer2018estimating}}\label{sec:appendix-ddly}
+\input{sections/appendix_ddly}
+
+\end{document}

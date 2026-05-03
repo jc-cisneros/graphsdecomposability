@@ -1,0 +1,48 @@
+% settings.tex — Shared Beamer Config
+%
+% --- Base font size (edit to taste) ---
+% Beamer accepts 8pt, 9pt, 10pt, 11pt (default), 12pt, 14pt, 17pt, 20pt.
+% The value scales body text, frame titles, footnotes, and table fonts
+% proportionally. Use a smaller value to fit more content per slide.
+\documentclass[aspectratio=169,10pt]{beamer}
+
+% Theme (use default unless overridden)
+\usetheme{Madrid}
+\usecolortheme{dolphin}
+
+% Language and font
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+% Math, figures, color, tables, and TikZ
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{tikz}
+\usepackage{float}
+
+% Custom colors
+\definecolor{myblue}{RGB}{0,70,140}
+\setbeamercolor{structure}{fg=myblue}
+
+% --- Slide margins (edit to taste) ---
+% Beamer's defaults are ~1cm on each side; widen for a less cramped feel.
+% Increase the values to push content further from the edges; decrease to fit
+% wider tables/figures. Vertical breathing room is set by `frametitlemargin`.
+\newlength{\slidemarginh}\setlength{\slidemarginh}{1.4cm}
+\setbeamersize{text margin left=\slidemarginh, text margin right=\slidemarginh}
+\setlength{\leftmargini}{1.5em}   % first-level itemize indent
+\setlength{\leftmarginii}{1.3em}  % second-level itemize indent
+
+% Footer customization (optional)
+\setbeamertemplate{footline}[frame number]
+
+% Note: enumitem is incompatible with beamer's enumerate machinery in
+% recent versions (causes a \labelenumi recursion). We use beamer's
+% built-in list spacing instead.
+
+% Links
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, urlcolor=myblue, linkcolor=myblue}
